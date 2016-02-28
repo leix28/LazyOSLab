@@ -49,7 +49,7 @@ sched_init(void) {
     sched_class = &default_sched_class;
 
     rq = &__rq;
-    rq->max_time_slice = 5;
+    rq->max_time_slice = MAX_TIME_SLICE;
     sched_class->init(rq);
 
     cprintf("sched class: %s\n", sched_class->name);
@@ -99,7 +99,6 @@ schedule(void) {
     local_intr_restore(intr_flag);
 }
 
-// add timer to timer_list
 void
 add_timer(timer_t *timer) {
     bool intr_flag;
