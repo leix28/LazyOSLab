@@ -310,8 +310,8 @@ print_stackframe(void) {
         uint32_t *args = (uint32_t*)ebp + 2;
         cprintf("args:0x%08x 0x%08x 0x%08x 0x%08x\n", \
                 args[0], args[1], args[2], args[3]);
-        print_debuginfo(eip);
-        eip = args[-2];
-        ebp = args[-1];
+        print_debuginfo(eip - 1);
+        eip = args[-1];
+        ebp = args[-2];
     }
 }
