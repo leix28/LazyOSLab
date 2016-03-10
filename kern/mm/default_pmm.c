@@ -119,6 +119,7 @@ default_free_pages(struct Page *base, size_t n) {
         p->flags = 0;
         set_page_ref(p, 0);
     }
+    p = base;
     p->property = n;
 
     list_entry_t *le = &free_list, *nxt = NULL, *tmp;
@@ -140,7 +141,7 @@ default_free_pages(struct Page *base, size_t n) {
     }
 
     if (nxt != NULL && nxt != &free_list) {
-        struct Page *page = le2page(nxt, page_list);
+        struct Page *page = le2page(nxt, page_link);
         if (p + p->property == page) {
             p->property += page->property;
             ClearPageProperty(page);
@@ -149,6 +150,8 @@ default_free_pages(struct Page *base, size_t n) {
             nxt = tmp;
         }
     }
+
+    if (nxt == NULL) nxt = &free_list;
     SetPageProperty(p);
     list_add_before(nxt, &(p->page_link));
     nr_free += n;
@@ -169,7 +172,6 @@ basic_check(void) {
 
     assert(p0 != p1 && p0 != p2 && p1 != p2);
     assert(page_ref(p0) == 0 && page_ref(p1) == 0 && page_ref(p2) == 0);
-
     assert(page2pa(p0) < npage * PGSIZE);
     assert(page2pa(p1) < npage * PGSIZE);
     assert(page2pa(p2) < npage * PGSIZE);
