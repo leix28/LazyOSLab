@@ -124,23 +124,23 @@ default_free_pages(struct Page *base, size_t n) {
     list_entry_t *le = &free_list, *nxt = NULL, *tmp;
     //merge with prev
     while ((le = list_next(le)) != &free_list) {
-        Page *page = le2page(le, page_link);
+        struct Page *page = le2page(le, page_link);
         if (page + page->property == p) {
+            nxt = list_next(le);
             list_del(le);
             page->property += n;
-            ClearPageProperty(p);
             p = page;
-            nxt = list_next(le);
             break;
         }
         if (page > p) {
             nxt = le;
             break;
         }
+        assert(page + page->property < p);
     }
 
-    if (nxt != NULL) {
-        Page *page = le2page(nxt, page_list);
+    if (nxt != NULL && nxt != &free_list) {
+        struct Page *page = le2page(nxt, page_list);
         if (p + p->property == page) {
             p->property += page->property;
             ClearPageProperty(page);
