@@ -414,7 +414,7 @@ do_pgfault(struct mm_struct *mm, uint32_t error_code, uintptr_t addr) {
                 cprintf("do_pgfault failed: can't swap_in.\n");
                 goto failed;
             }
-            if (page_insert(mm->pgdir, page, addr, perm) != ) {
+            if (page_insert(mm->pgdir, page, addr, perm) != 0) {
                 cprintf("do_pgfault failed: can't page_insert.\n");
                 goto failed;
             }
