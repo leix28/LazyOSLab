@@ -402,7 +402,7 @@ do_pgfault(struct mm_struct *mm, uint32_t error_code, uintptr_t addr) {
         goto failed;
     }
     if (*ptep == 0) {
-        Struct Page *pg = pgdir_alloc_page(mm->pgdir, addr, perm);
+        struct Page *pg = pgdir_alloc_page(mm->pgdir, addr, perm);
         if (pg == NULL) {
             cprintf("do_pgfault failed: can't alloc_page.\n");
             goto failed;
@@ -411,7 +411,7 @@ do_pgfault(struct mm_struct *mm, uint32_t error_code, uintptr_t addr) {
 
     }
 
-   ret = 0;
+    ret = 0;
 failed:
     return ret;
 }
