@@ -410,14 +410,11 @@ do_pgfault(struct mm_struct *mm, uint32_t error_code, uintptr_t addr) {
     } else {
         if (swap_init_ok) {
             struct Page *page=NULL;
-            if (swap_in(mm, addr, &page) != 0) {
+            if ((ret = swap_in(mm, addr, &page)) != 0) {
                 cprintf("do_pgfault failed: can't swap_in.\n");
                 goto failed;
             }
-            if (page_insert(mm->pgdir, page, addr, perm) != 0) {
-                cprintf("do_pgfault failed: can't page_insert.\n");
-                goto failed;
-            }
+            page_insert(mm->pgdir, page, addr, perm);
             swap_map_swappable(mm, addr, page, 1);
             page->pra_vaddr = addr;
         } else {
