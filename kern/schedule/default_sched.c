@@ -71,9 +71,7 @@ stride_enqueue(struct run_queue *rq, struct proc_struct *proc) {
       * (4) increase rq->proc_num
       */
     rq->lab6_run_pool = skew_heap_insert(rq->lab6_run_pool, &(proc->lab6_run_pool), proc_stride_comp_f);
-    if (proc->time_slice == 0 || proc->time_slice > rq->max_time_slice) {
-        proc->time_slice = rq->max_time_slice;
-    }
+    proc->time_slice = rq->max_time_slice;
     proc->rq = rq;
     rq->proc_num ++;
 }
@@ -122,7 +120,7 @@ stride_pick_next(struct run_queue *rq) {
     if (rq->lab6_run_pool == NULL) return NULL;
     struct proc_struct *proc = le2proc(rq->lab6_run_pool, lab6_run_pool);
     if (proc->lab6_priority == 0)
-        proc->lab6_stride = 0;
+        proc->lab6_stride += BIG_STRIDE;
     else
         proc->lab6_stride += BIG_STRIDE / proc->lab6_priority;
     return proc;
@@ -139,10 +137,10 @@ stride_pick_next(struct run_queue *rq) {
 static void
 stride_proc_tick(struct run_queue *rq, struct proc_struct *proc) {
      /* LAB6: YOUR CODE */
-    if (proc->time_slice == 0)
-        proc->need_resched = 1;
-    else
+    if (proc->time_slice > 0)
         proc->time_slice--;
+    else
+        proc->need_resched = 1;
 }
 
 struct sched_class default_sched_class = {
