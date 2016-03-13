@@ -128,7 +128,7 @@ void phi_take_forks_condvar(int i) {
     state_condvar[i] = HUNGRY;
     phi_test_condvar(i);
     while (state_condvar[i] != EATING) {
-        cond_wait(mtp->cv[i]);
+        cond_wait(&(mtp->cv[i]));
     }
       if(mtp->next_count>0)
          up(&(mtp->next));
