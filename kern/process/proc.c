@@ -104,7 +104,7 @@ alloc_proc(void) {
      */
         proc->state = PROC_UNINIT;
         proc->pid = -1;
-        proc_runs = 0;
+        proc->runs = 0;
         proc->kstack = 0;
         proc->need_resched = 0;
         proc->parent = NULL;
@@ -113,7 +113,7 @@ alloc_proc(void) {
         proc->tf = NULL;
         proc->cr3 = 0;
         proc->flags = 0;
-        memset(name, 0, PROC_NAME_LEN + 1);
+        memset(proc->name, 0, PROC_NAME_LEN + 1);
     }
     return proc;
 }
@@ -322,6 +322,7 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
 
     copy_thread(procp, stack, tf);
 
+    bool intr_flag;
     local_intr_save(intr_flag);
     {
         proc->pid = get_pid();
