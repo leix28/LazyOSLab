@@ -5,11 +5,11 @@
 
 /* In the first fit algorithm, the allocator keeps a list of free blocks (known as the free list) and,
    on receiving a request for memory, scans along the list for the first block that is large enough to
-   satisfy the request. If the chosen block is significantly larger than that requested, then it is 
+   satisfy the request. If the chosen block is significantly larger than that requested, then it is
    usually split, and the remainder added to the list as another free block.
    Please see Page 196~198, Section 8.2 of Yan Wei Min's chinese book "Data Structure -- C programming language"
 */
-// LAB2 EXERCISE 1: YOUR CODE
+// LAB2 EXERCISE 1: 2013011344
 // you should rewrite functions: default_init,default_init_memmap,default_alloc_pages, default_free_pages.
 /*
  * Details of FFMA
@@ -87,11 +87,12 @@ default_alloc_pages(size_t n) {
         return NULL;
     }
     struct Page *page = NULL;
-    list_entry_t *le = &free_list;
+    list_entry_t *le = &free_list, *nxt;
     while ((le = list_next(le)) != &free_list) {
         struct Page *p = le2page(le, page_link);
         if (p->property >= n) {
             page = p;
+            nxt = list_next(le);
             break;
         }
     }
@@ -100,8 +101,9 @@ default_alloc_pages(size_t n) {
         if (page->property > n) {
             struct Page *p = page + n;
             p->property = page->property - n;
-            list_add(&free_list, &(p->page_link));
-    }
+            SetPageProperty(p);
+            list_add_before(nxt, &(p->page_link));
+        }
         nr_free -= n;
         ClearPageProperty(page);
     }
@@ -117,26 +119,42 @@ default_free_pages(struct Page *base, size_t n) {
         p->flags = 0;
         set_page_ref(p, 0);
     }
-    base->property = n;
-    SetPageProperty(base);
-    list_entry_t *le = list_next(&free_list);
-    while (le != &free_list) {
-        p = le2page(le, page_link);
-        le = list_next(le);
-        if (base + base->property == p) {
-            base->property += p->property;
-            ClearPageProperty(p);
-            list_del(&(p->page_link));
+    p = base;
+    p->property = n;
+
+    list_entry_t *le = &free_list, *nxt = NULL, *tmp;
+    //merge with prev
+    while ((le = list_next(le)) != &free_list) {
+        struct Page *page = le2page(le, page_link);
+        if (page + page->property == p) {
+            nxt = list_next(le);
+            list_del(le);
+            page->property += n;
+            p = page;
+            break;
         }
-        else if (p + p->property == base) {
-            p->property += base->property;
-            ClearPageProperty(base);
-            base = p;
-            list_del(&(p->page_link));
+        if (page > p) {
+            nxt = le;
+            break;
+        }
+        assert(page + page->property < p);
+    }
+
+    if (nxt != NULL && nxt != &free_list) {
+        struct Page *page = le2page(nxt, page_link);
+        if (p + p->property == page) {
+            p->property += page->property;
+            ClearPageProperty(page);
+            tmp = list_next(nxt);
+            list_del(nxt);
+            nxt = tmp;
         }
     }
+
+    if (nxt == NULL) nxt = &free_list;
+    SetPageProperty(p);
+    list_add_before(nxt, &(p->page_link));
     nr_free += n;
-    list_add(&free_list, &(base->page_link));
 }
 
 static size_t
@@ -154,7 +172,6 @@ basic_check(void) {
 
     assert(p0 != p1 && p0 != p2 && p1 != p2);
     assert(page_ref(p0) == 0 && page_ref(p1) == 0 && page_ref(p2) == 0);
-
     assert(page2pa(p0) < npage * PGSIZE);
     assert(page2pa(p1) < npage * PGSIZE);
     assert(page2pa(p2) < npage * PGSIZE);
@@ -195,7 +212,7 @@ basic_check(void) {
     free_page(p2);
 }
 
-// LAB2: below code is used to check the first fit allocation algorithm (your EXERCISE 1) 
+// LAB2: below code is used to check the first fit allocation algorithm (your EXERCISE 1)
 // NOTICE: You SHOULD NOT CHANGE basic_check, default_check functions!
 static void
 default_check(void) {
@@ -269,4 +286,3 @@ const struct pmm_manager default_pmm_manager = {
     .nr_free_pages = default_nr_free_pages,
     .check = default_check,
 };
-
