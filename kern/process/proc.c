@@ -124,7 +124,7 @@ alloc_proc(void) {
         proc->wait_state = 0;
         proc->cptr = NULL;
         proc->yptr = NULL;
-        proc->optr = NULL:
+        proc->optr = NULL;
     }
     return proc;
 }
