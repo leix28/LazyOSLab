@@ -68,6 +68,6 @@ cond_wait (condvar_t *cvp) {
         up(&(cvp->owner->mutex));
     }
     down(&(cvp->sem));
-    svp->count --;
+    cvp->count --;
     cprintf("cond_wait end:  cvp %x, cvp->count %d, cvp->owner->next_count %d\n", cvp, cvp->count, cvp->owner->next_count);
 }
