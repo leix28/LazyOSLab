@@ -135,6 +135,11 @@ alloc_proc(void) {
         proc->cptr = NULL;
         proc->yptr = NULL;
         proc->optr = NULL;
+        proc->rq = NULL;
+        list_init(&(proc->run_link));
+        proc->time_slice = 0;
+        skew_heap_init(&(proc->lab6_run_pool));
+        proc->lab6_priority = proc->lab6_stride = 0;
     }
     return proc;
 }
