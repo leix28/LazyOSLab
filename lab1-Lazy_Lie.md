@@ -1,4 +1,4 @@
-# Lab1 erport
+# Lab1 report
 
 ## [练习1]
 **1.1 操作系统镜像文件 ucore.img 是如何一步一步生成的?(需要比较详细地解释 Makefile 中
