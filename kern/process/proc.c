@@ -910,7 +910,6 @@ cpu_idle(void) {
         }
     }
 }
-<<<<<<< HEAD
 
 //FOR LAB6, set the process's priority (bigger value will get more CPU time)
 void
@@ -920,5 +919,3 @@ lab6_set_priority(uint32_t priority)
         current->lab6_priority = 1;
     else current->lab6_priority = priority;
 }
-=======
->>>>>>> lab5-dev
