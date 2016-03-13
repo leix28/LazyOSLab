@@ -121,6 +121,10 @@ alloc_proc(void) {
         proc->cr3 = boot_cr3;
         proc->flags = 0;
         memset(proc->name, 0, PROC_NAME_LEN + 1);
+        proc->wait_state = 0;
+        proc->cptr = NULL;
+        proc->yptr = NULL;
+        proc->optr = NULL:
     }
     return proc;
 }
@@ -420,6 +424,7 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
     if (proc == NULL) {
         goto fork_out;
     }
+    assert(current->wait_state == 0);
     proc->parent = current;
     if (setup_kstack(proc) != 0) {
         goto bad_fork_cleanup_proc;
