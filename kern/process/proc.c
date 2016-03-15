@@ -646,8 +646,8 @@ load_icode(int fd, int argc, char **kargv) {
     struct Page *page;
     struct proghdr progheader;
     uint32_t vm_flags, perm, phnum;
-    for (int i = 0; i < elf->e_phnum; i++) {
-        off_t phoff = elf->e_phoff + sizeof(struct proghdr) * i;
+    for (int i = 0; i < elfheader.e_phnum; i++) {
+        off_t phoff = elfheader.e_phoff + sizeof(struct proghdr) * i;
         ret = load_icode_read(fd, &progheader, sizeof(struct proghdr), phoff);
         if (ret) goto bad_read;
 
@@ -657,15 +657,15 @@ load_icode(int fd, int argc, char **kargv) {
             ret = -E_INVAL_ELF;
             goto bad_read;
         }
-        if (ph->p_filesz == 0) continue ;
+        if (progheader.p_filesz == 0) continue ;
 
         vm_flags = 0, perm = PTE_U;
-        if (ph->p_flags & ELF_PF_X) vm_flags |= VM_EXEC;
-        if (ph->p_flags & ELF_PF_W) vm_flags |= VM_WRITE;
-        if (ph->p_flags & ELF_PF_R) vm_flags |= VM_READ;
+        if (progheader.p_flags & ELF_PF_X) vm_flags |= VM_EXEC;
+        if (progheader.p_flags & ELF_PF_W) vm_flags |= VM_WRITE;
+        if (progheader.p_flags & ELF_PF_R) vm_flags |= VM_READ;
         if (vm_flags & VM_WRITE) perm |= PTE_W;
         ret = mm_map(mm, progheader.p_va, progheader.p_memsz, vm_flags, NULL);
-        if (ret) goto bad_cleanup_mmap;
+        if (ret) goto bad_read;
 
         off_t offset = progheader.p_offset;
         size_t off, size;
@@ -686,10 +686,9 @@ load_icode(int fd, int argc, char **kargv) {
 
             start += size, offset += size;
         }
-        end = ph->p_va + ph->p_memsz;
+        end = progheader.p_va + progheader.p_memsz;
 
         if (start < la) {
-            /* ph->p_memsz == ph->p_filesz */
             if (start == end) {
                 continue ;
             }
@@ -704,7 +703,7 @@ load_icode(int fd, int argc, char **kargv) {
         while (start < end) {
             if ((page = pgdir_alloc_page(mm->pgdir, la, perm)) == NULL) {
                 ret = -E_NO_MEM;
-                goto bad_cleanup_mmap;
+                goto bad_read;
             }
             off = start - la, size = PGSIZE - off, la += PGSIZE;
             if (end < la) {
@@ -718,7 +717,7 @@ load_icode(int fd, int argc, char **kargv) {
 
     vm_flags = VM_READ | VM_WRITE | VM_STACK;
     if ((ret = mm_map(mm, USTACKTOP - USTACKSIZE, USTACKSIZE, vm_flags, NULL)) != 0) {
-        goto bad_cleanup_mmap;
+        goto bad_read;
     }
     assert(pgdir_alloc_page(mm->pgdir, USTACKTOP-PGSIZE , PTE_USER) != NULL);
     assert(pgdir_alloc_page(mm->pgdir, USTACKTOP-2*PGSIZE , PTE_USER) != NULL);
@@ -753,7 +752,7 @@ load_icode(int fd, int argc, char **kargv) {
     tf->tf_cs = USER_CS;
     tf->tf_ds = tf->tf_es = tf->tf_ss = USER_DS;
     tf->tf_esp = stacktop;
-    tf->tf_eip = elf->e_entry;
+    tf->tf_eip = elfheader.e_entry;
     tf->tf_eflags = FL_IF;
     ret = 0;
 
