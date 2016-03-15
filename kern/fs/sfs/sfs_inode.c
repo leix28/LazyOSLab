@@ -608,6 +608,7 @@ sfs_io_nolock(struct sfs_fs *sfs, struct sfs_inode *sin, void *buf, off_t offset
         if (ret) goto out;
         alen += size;
         blkno += 1;
+        if (nblks == 0) goto out;
         nblks -= 1;
     }
     for (int i = 0; i < nblks; i++) {
