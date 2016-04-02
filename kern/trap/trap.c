@@ -146,7 +146,7 @@ print_regs(struct pushregs *regs) {
 static void
 trap_dispatch(struct trapframe *tf) {
     char c;
-
+    static struct trapframe *tmpk, tmp;
     switch (tf->tf_trapno) {
     case IRQ_OFFSET + IRQ_TIMER:
         /* LAB1 2013011344 : STEP 3 */
@@ -170,7 +170,6 @@ trap_dispatch(struct trapframe *tf) {
         break;
     //LAB1 CHALLENGE 1 : YOUR CODE you should modify below codes.
     case T_SWITCH_TOU:
-        struct trapframe tmp
         if (tf->tf_cs != USER_CS) {
             tmp = *tf;
             tmp.tf_cs = USER_CS;
@@ -185,9 +184,9 @@ trap_dispatch(struct trapframe *tf) {
             tf->tf_cs = KERNEL_CS;
             tf->tf_ds = tf->tf_es = KERNEL_DS;
             tf->tf_eflags &= ~FL_IOPL_MASK;
-            switchu2k = (struct trapframe *)(tf->tf_esp - (sizeof(struct trapframe) - 8));
-            memmove(switchu2k, tf, sizeof(struct trapframe) - 8);
-            *((uint32_t *)tf - 1) = (uint32_t)switchu2k;
+            tmpk = (struct trapframe *)(tf->tf_esp - (sizeof(struct trapframe) - 8));
+            memmove(tmpk, tf, sizeof(struct trapframe) - 8);
+            *((uint32_t *)tf - 1) = (uint32_t)tmpk;
         }
         break;
     case IRQ_OFFSET + IRQ_IDE1:
