@@ -646,7 +646,8 @@ load_icode(int fd, int argc, char **kargv) {
     struct Page *page;
     struct proghdr progheader;
     uint32_t vm_flags, perm, phnum;
-    for (int i = 0; i < elfheader.e_phnum; i++) {
+    uint32_t i;
+    for (i = 0; i < elfheader.e_phnum; i++) {
         off_t phoff = elfheader.e_phoff + sizeof(struct proghdr) * i;
         ret = load_icode_read(fd, &progheader, sizeof(struct proghdr), phoff);
         if (ret) goto bad_read;
@@ -730,7 +731,7 @@ load_icode(int fd, int argc, char **kargv) {
     lcr3(PADDR(mm->pgdir));
 
     //setup argc, argv
-    uint32_t argv_size=0, i;
+    uint32_t argv_size=0;
     for (i = 0; i < argc; i ++) {
         argv_size += strnlen(kargv[i],EXEC_MAX_ARG_LEN + 1)+1;
     }

@@ -611,7 +611,8 @@ sfs_io_nolock(struct sfs_fs *sfs, struct sfs_inode *sin, void *buf, off_t offset
         if (nblks == 0) goto out;
         nblks -= 1;
     }
-    for (int i = 0; i < nblks; i++) {
+    int i;
+    for (i = 0; i < nblks; i++) {
         ret = sfs_bmap_load_nolock(sfs, sin, blkno + i, &ino);
         if (ret) goto out;
         ret = sfs_block_op(sfs, buf + alen, ino, 1);
