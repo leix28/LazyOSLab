@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <console.h>
 #include <kdebug.h>
+#include <string.h>
 
 #define TICK_NUM 100
 
